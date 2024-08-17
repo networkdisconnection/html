@@ -1,45 +1,65 @@
-<?php
-$nonce = base64_encode(random_bytes(32));
-header("Content-Security-Policy: default-src 'self'; script-src 'nonce-$nonce'; style-src 'nonce-$nonce';");
-?>
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="description" content="404 網頁錯誤測試頁面">
   <title>404 網頁錯誤｜簡單頁面測試</title>
   <link rel="icon" type="image/png" href="css/image/404.ico">
   <link rel="stylesheet" href="css/style.css">
- 
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' https://www.gstatic.com https://cdnjs.cloudflare.com;
+    style-src 'self';
+    img-src 'self' data:;
+    font-src 'self';
+    frame-src 'none';
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    connect-src 'self';
+    upgrade-insecure-requests;
+  ">
 </head>
 <body>
-  <div class="link-wrapper">
-    <h1><br>簡單的網頁測試 </br></h1> &emsp;
-    <h2><br>Simple Web Test</hr></h2>
-  </div>
-  <div class="input-wrapper">
-    <input type="text" id="input" placeholder="請輸入文字...">
-    <button id="submit-btn" class="submit-btn-animation">送出</button>
-  </div>
-  <div class="input-wrapper">
-    <button id="start-typewriter-btn">啟動打字機</button>
-    <button id="stop-typewriter-btn">終止打字機</button>
-    <button id="clear-btn">清除</button>
-  </div>
-  <div class="terminal"></div>
-  
-  <!--<div class="link-wrapper"> 
-    <h3>電子郵件測試</h3>
-    <h4><a href="mailto:test@gmail.com" class="email-link">email test</a></h4>
-   </div>
-  -->
+  <header>
+    <h1 style="font-size: 2.5rem; color: #006923; margin: 0 0 10px 0;">簡單的網頁測試</h1>
+    <h2 style="font-size: 1.5rem; color: #333; margin: 0; font-weight: normal;">Simple Web Test</h2>
+  </header>
 
-  <script nonce="<?php echo $nonce; ?>" defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-  <script nonce="<?php echo $nonce; ?>" defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js"></script>
-  <script nonce="<?php echo $nonce; ?>" defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-  <script nonce="<?php echo $nonce; ?>" defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-  <script nonce="<?php echo $nonce; ?>" defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
-  <script nonce="<?php echo $nonce; ?>" defer src="js/app.js"></script>
+  <div class="controls-container">
+    <div class="input-wrapper">
+      <input type="text" id="input-text" placeholder="請輸入文字..." autocomplete="off" aria-label="輸入文字">
+      <button id="submit-btn" aria-label="送出">送出</button>
+    </div>
+    <div class="control-wrapper">
+      <button id="start-typewriter-btn" aria-label="啟動打字機">啟動打字機</button>
+      <button id="stop-typewriter-btn" aria-label="終止打字機">終止打字機</button>
+      <button id="clear-btn" aria-label="清除">清除</button>
+    </div>
+  </div>
+  <div class="terminal" aria-live="polite" role="log"></div>
+
+  <footer>
+    <div class="text-center" id="footer-text">
+      <p id="copyright">&copy; <span id="current-year">2024</span> NetworkDisconnection。保留所有權利。</p>
+      <p>
+        <a rel="noopener noreferrer" href="https://www.cloudflare.com?utm_source=challenge&amp;utm_campaign=m" target="_blank">
+          Performance & security by Cloudflare
+        </a>
+      </p>
+    </div>
+  </footer>
+
+  <div id="pageCounter" aria-live="polite">本地訪問次數(功能測試中)：<span id="visitCount">0</span></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js" defer></script>
+  <script src="js/counter.js" defer></script>
+  <script src="js/app.js" defer></script>
 </body>
 </html>
