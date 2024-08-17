@@ -1,112 +1,119 @@
 $(function () {
+  // 選擇終端顯示區域
   const $terminal = $(".terminal");
-  const $input = $("#input");
-  const $submitBtn = $("#submit-btn");
-  const $startTypewriterBtn = $("#start-typewriter-btn");
-  const $clearBtn = $("#clear-btn");
-  let inputCounter = 0;
   let typewriterInterval;
 
+  // 設定打字機效果的選項
   const typewritingOptions = {
-    typing_interval: 200,
-    blink_interval: "0.5s",
-    cursor_color: "#006923",
+    typing_interval: 300, // 將打字間隔調整為300毫秒，可以根據需要進一步調整
   };
 
-  const rewriteOptions = {
-    typing_interval: 100,
-    blink_interval: "0.5s",
-    cursor_color: "#006923",
-  };
+  // 定義要顯示的消息數組
+  const messages = [
+    ">啟動資料傳輸作業...\n",
+    ">資料傳輸錯誤404 Not Found\n",
+    ">找不到這個網頁\n",
+    ">資料傳輸中止\n"
+  ];
 
-  const startMessage = ">啟動資料傳輸作業...\n";
-  const errorMessage = ">資料傳輸錯誤404 Not Found\n";
-  const notMessage = ">找不到這個網頁\n";
-  const stopMessage = ">資料傳輸中止\n";
+  // 開始打字機動畫的函數
+  const startTypewriterAnimation = (texts) => {
+    let textIndex = 0;  // 當前處理的文本索引
+    let charIndex = 0;  // 當前處理的字符索引
+    let fullText = "";  // 存儲完整的顯示文本
 
-  const startTypewriterAnimation = (text, callback) => {
-    let lines = text.split('\n');
-    let lineIndex = 0;
-    let currentIndex = 0;
-
-    typewriterInterval = setInterval(() => {
-      if (currentIndex < lines[lineIndex].length) {
-        $terminal.append(escapeHtml(lines[lineIndex][currentIndex]));
-        currentIndex++;
-      } else {
-        $terminal.append('<br>');
-        lineIndex++;
-        currentIndex = 0;
-      }
-
-      if (lineIndex >= lines.length) {
+    // 打字效果的核心函數
+    const typeChar = () => {
+      // 檢查是否已經處理完所有文本
+      if (textIndex >= texts.length) {
         clearInterval(typewriterInterval);
         typewriterInterval = null;
-        if (callback) {
-          callback();
-        }
+        return;
       }
-    }, typewritingOptions.typing_interval);
+
+      let currentText = texts[textIndex];
+
+      // 檢查是否還有字符需要顯示
+      if (charIndex < currentText.length) {
+        fullText += currentText[charIndex];
+        charIndex++;
+      } else {
+        // 當前文本處理完畢，準備處理下一條消息
+        fullText += "\n";
+        textIndex++;
+        charIndex = 0;
+      }
+
+      // 更新終端顯示內容
+      updateTerminal(fullText);
+    };
+
+    // 初始化終端顯示
+    $terminal.empty().append('<span class="cursor"></span>');
+    // 設置定時器來執行打字效果
+    typewriterInterval = setInterval(typeChar, typewritingOptions.typing_interval);
   };
 
-  const startTypewriting = () => $terminal.typewriting(startMessage, typewritingOptions);
-  const showErrorMessage = () => $terminal.rewrite(errorMessage, rewriteOptions);
-
-  $startTypewriterBtn.on("click", () => {
-    $terminal.html("");
-    startTypewriterAnimation(startMessage, () => {
-      startTypewriterAnimation(errorMessage, () => {
-        startTypewriterAnimation(notMessage, () => {
-          startTypewriterAnimation(stopMessage);
-        });
-      });
-    });
-  });
-
-  $("#stop-typewriter-btn").on("click", () => {
-    clearInterval(typewriterInterval);
-    typewriterInterval = null;
-  });
-
-  $clearBtn.on("click", () => {
-    $terminal.html("");
-    inputCounter = 0;
-  });
-
-  $submitBtn.on('click', () => {
-    const inputText = $input.val().trim();
-    if (inputCounter >= 3) {
-      $input.val('');
-      inputCounter = 0;
-      return;
+  // 使用事件委託來處理按鈕點擊
+  $(".controls-container").on("click touchstart", "button", function(e) {
+    e.preventDefault(); // 防止默認行為
+    const buttonId = $(this).attr('id');
+    
+    switch(buttonId) {
+      case "start-typewriter-btn":
+        $terminal.empty();
+        startTypewriterAnimation(messages);
+        break;
+      case "stop-typewriter-btn":
+        clearInterval(typewriterInterval);
+        typewriterInterval = null;
+        break;
+      case "clear-btn":
+        $terminal.empty();
+        break;
     }
-    if (inputText !== '') {
-      $terminal.append(`> ${escapeHtml(inputText)}<br>`);
-      $input.val('');
-      inputCounter++;
-    }
+
+    // 確保頁腳和頁角計數器內容不變
+    $footer.html(originalFooterContent);
+    $pageCounter.html(originalPageCounterContent);
   });
 
-  const TYPEWRITING_DELAY = 1000;
-  const ERROR_MESSAGE_DELAY = TYPEWRITING_DELAY + typewritingOptions.typing_interval * startMessage.length + 100;
+  // 確保頁面加載時執行初始打字機效果
+  startTypewriterAnimation(messages);
 
-  // Ensure initial typewriting effect when loading the page
-  setTimeout(startTypewriting, TYPEWRITING_DELAY);
-  setTimeout(showErrorMessage, ERROR_MESSAGE_DELAY);
-
-  // Add this part to ensure the initial typewriting effect when loading the page
-  startTypewriterAnimation(startMessage, () => {
-    startTypewriterAnimation(errorMessage, () => {
-      startTypewriterAnimation(notMessage, () => {
-        startTypewriterAnimation(stopMessage);
-      });
-    });
+  // 滾動條顯示/隱藏
+  $terminal.on('mouseenter', function() {
+    $(this).addClass('show-scrollbar');
+  }).on('mouseleave', function() {
+    $(this).removeClass('show-scrollbar');
   });
 
-  // Function to escape HTML entities
-  function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.appendChild(document.createTextNode(text));
-    return div.innerHTML;
+  // 滾動到底部的函數
+  function scrollToBottom(element) {
+    element.scrollTop = element.scrollHeight;
+  }
+
+  const $footer = $("footer");
+  const $pageCounter = $("#pageCounter");
+  
+  // 保存原始內容
+  const originalFooterContent = $footer.html();
+  const originalPageCounterContent = $pageCounter.html();
+
+  // 更新終端顯示內容的函數
+  function updateTerminal(fullText) {
+    $terminal.html(fullText + '<span class="cursor"></span>');
+    
+    // 調整終端機高度
+    $terminal.css('height', 'auto');
+    let newHeight = $terminal.prop('scrollHeight');
+    $terminal.css('height', Math.min(newHeight, 300) + 'px');
+    
+    // 滾動到底部
+    $terminal.scrollTop($terminal[0].scrollHeight);
+
+    // 恢復頁腳和頁角計數器的原始內容
+    $footer.html(originalFooterContent);
+    $pageCounter.html(originalPageCounterContent);
   }
 });
